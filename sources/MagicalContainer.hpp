@@ -1,307 +1,176 @@
 #pragma once
 
-#include <set>
 #include <vector>
-#include <stdexcept>
+#include <set>
+#include "LIterator.hpp"
+
 using namespace std;
 
-namespace ariel
-{
-	class MagicalContainer
-	{
-		private:
-			set<int> _elements; // to keep the element in ascending order
-			vector<const int *> _elements_ascending_order;
-			vector<const int *> _elements_sidecross_order;
-			vector<const int *> _elements_prime_order;
+namespace ariel {
+    class MagicalContainer{
+        private:
+      
+            set<int> container; // set will help preserving the ascenidg order 
+            vector<const int*> AScending_Elements;
+            vector<const int*> Prime_Elements;
+            vector<const int*> SideCross_Elements;
 
-			
-	static bool isPrime(int num){
-    if (abs(num) <= 1)
-    {
-		return false;
-    }
-    
-	
-	for (int i = 2; i*i < num; ++i)
-	{
-		if (num % i == 0)
-			return false;
-	}
-	
-	return true;
-    }
+            bool isPrime(int element);
 
-		public:
-			
-			MagicalContainer()=default; // defult constructor
-			
-			void addElement(int element);
-
-			void removeElement(int element);
-
-			
-			size_t size() const {
-				return _elements.size();
-			}
+        public:
 
 
+            MagicalContainer();
+            void addElement(int element);
+            void removeElement(int element);
+            int size() const {return container.size();}
+            
+        
 
-		class AscendingIterator
-		{
-			private:
-				MagicalContainer& container;
-				size_t index;
 
+        
+
+        class AscendingIterator : public LIterator {
+
+            private:
+                MagicalContainer* _container;
+                size_t _index;
+            public:
+                AscendingIterator(): _container(nullptr), _index(0){} //inline implement
+                
+				AscendingIterator(MagicalContainer& container): AscendingIterator(&container, 0){} //inline implement
+                
+				AscendingIterator(const AscendingIterator &ascen_iter_other);
+                
+				AscendingIterator (MagicalContainer *container, size_t index): _container(container), _index(index){}//inline implement
+                
+				~AscendingIterator() override = default;
+
+                AscendingIterator &operator=(const AscendingIterator &ascen_iter_other);
 				
-				AscendingIterator(MagicalContainer &cont, size_t index);
+				bool operator==(const AscendingIterator &other) const;
+                bool operator==(const LIterator &other) const override;
+                
+				bool operator!=(const AscendingIterator &other) const;
+				bool operator!=(const LIterator &other) const override;
+                
+				
+				bool operator<(const LIterator &other) const override;
+				bool operator<(const AscendingIterator &other) const;
+                
+				
+				bool operator>(const LIterator &other) const override;
+                bool operator>(const AscendingIterator &other) const;
+               
+			    int operator*() const;
 
-			public:
-				
-				AscendingIterator(MagicalContainer &cont);
 
-				~AscendingIterator() = default;
+                AscendingIterator& operator++();
 
-				
-				AscendingIterator(const AscendingIterator &other);//copy constructor
-
-				
-				AscendingIterator(AscendingIterator &&other) noexcept;
-				
-				
-				AscendingIterator &operator=(const AscendingIterator &other) {
-					if (this != &other)
-					{
-						container = other.container;
-						index = other.index;
-					}
-					return *this;
+                AscendingIterator begin() {//inline implementation
+					return AscendingIterator(_container, 0);
 				}
-
-				
-				AscendingIterator &operator=(AscendingIterator &&other) noexcept;
-			
-				
-				bool operator==(const AscendingIterator &other) const {
-					return index == other.index;
+                AscendingIterator end() const { //inline implementation
+					return AscendingIterator(_container, _container->AScending_Elements.size());
 				}
+        };
 
+
+        class PrimeIterator : public LIterator {
+            private:
+                MagicalContainer* _container;
+                size_t _index;
+            public:
+                PrimeIterator();
+
+                PrimeIterator(MagicalContainer &container): _container(&container), _index(0) {}
+
+                PrimeIterator(const PrimeIterator& prime_iter);
+                
+				PrimeIterator(MagicalContainer *container, size_t index): _container(container), _index(index){} //inline implement
+                
+				~PrimeIterator() override = default;
+
+                PrimeIterator &operator=(const PrimeIterator &prime_iter_other);
+                
+				bool operator==(const PrimeIterator &other) const;
+				bool operator==(const LIterator &other) const override;
+                
+				bool operator!=(const LIterator &other) const override;
+				bool operator!=(const PrimeIterator &other) const;
+
+                bool operator<(const LIterator &other) const override;
+                bool operator<(const PrimeIterator &other) const;
+
+				bool operator>(const LIterator &other) const override;
+				bool operator>(const PrimeIterator &other) const; 
+                
 				
-				bool operator!=(const AscendingIterator &other) const {
-					return index != other.index;
-				}
-
+                
 				
-				bool operator<(const AscendingIterator &other) const {
-					return index < other.index;
-				}
-
-				bool operator>(const AscendingIterator &other) const {
-					return index > other.index;
-				}
-
-		
-				int operator*() const {
-					if (index > container._elements_ascending_order.size())
-					{
-						throw out_of_range("Iterator out of range");
-					}
-
-					return *(container._elements_ascending_order.at(index));
-				}
-
+                
 				
-				AscendingIterator &operator++() {
-					if (index > container._elements_ascending_order.size())
-					{
-						throw out_of_range("Iterator out of range");
-					}
-					
-					++index;
-					return *this;
-				}
-
+                
 				
-				AscendingIterator begin() {
-					return AscendingIterator(container, 0);
-				}
+                PrimeIterator& operator++();
+                int operator*() const;
 
-				AscendingIterator end() const {
-					return AscendingIterator(container, container._elements_ascending_order.size());
-				}
-		};
+                PrimeIterator begin(){
+                    return PrimeIterator(_container, 0);
+                }
+                PrimeIterator end() const{
+                    return PrimeIterator(_container, _container->Prime_Elements.size());
+                }
+        };
 
-		class PrimeIterator
-		{
-			private:
-				MagicalContainer& container;
-				size_t index;
 
+        class SideCrossIterator : public LIterator {
+            private:
+                MagicalContainer* _container;
+                size_t _index;
+            public:
+                
+				SideCrossIterator(): _container(nullptr), _index(0) {}
+                
+				SideCrossIterator(MagicalContainer& magical): _container(&magical), _index(0){}
+                
+				SideCrossIterator(const SideCrossIterator& side_cross_iter);
+                
+				SideCrossIterator(MagicalContainer *container, size_t index): _container(container), _index(index){} //inline implement
+                
+				~SideCrossIterator() override = default;
+
+                SideCrossIterator &operator=(const SideCrossIterator &side_cross_iter_other);
+                
+				bool operator==(const LIterator &other) const override;
+				bool operator==(const SideCrossIterator &other) const;
+                
 				
-				PrimeIterator(MagicalContainer &cont, size_t index);
-
-			public:
+				bool operator!=(const LIterator &other) const override;
+				bool operator!=(const SideCrossIterator &other) const;
+                
+				bool operator<(const LIterator &other) const override;
+				bool operator<(const SideCrossIterator &other) const;
+                
 				
-				PrimeIterator(MagicalContainer &cont);
+				bool operator>(const LIterator &other) const override;
+				bool operator>(const SideCrossIterator &other) const;
+               
+                
+               
+               
+                SideCrossIterator& operator++();
+                int operator*() const;
 
-				
-				~PrimeIterator() = default;
+                SideCrossIterator begin(){
+                    return SideCrossIterator(_container, 0);
+                }
 
-				PrimeIterator(const PrimeIterator &other);
+                SideCrossIterator end() const{
+                    return SideCrossIterator(_container, _container->SideCross_Elements.size());
+                }
+        };
 
-				
-				PrimeIterator(PrimeIterator &&other) noexcept;
-				
-				
-				PrimeIterator &operator=(const PrimeIterator &other) {
-					if (this != &other)
-					{
-						container = other.container;
-						index = other.index;
-					}
+    };
 
-					return *this;
-				}
-
-				
-				PrimeIterator &operator=(PrimeIterator &&other) noexcept;
-			
-				
-				bool operator==(const PrimeIterator &other) const {
-					return index == other.index;
-				}
-
-				bool operator!=(const PrimeIterator &other) const {
-					return index != other.index;
-				}
-
-				
-				bool operator<(const PrimeIterator &other) const {
-					return index < other.index;
-				}
-
-				
-				bool operator>(const PrimeIterator &other) const {
-					return index > other.index;
-				}
-
-				int operator*() const {
-					if (index > container._elements_ascending_order.size())
-					{
-						throw out_of_range("Iterator out of range");
-					}
-
-					return *(container._elements_prime_order.at(index));
-				}
-
-				
-				PrimeIterator &operator++() {
-					if (index > container._elements_prime_order.size())
-					{
-						throw out_of_range("Iterator out of range");
-					}
-					
-					++index;
-					return *this;
-				}
-
-				
-				PrimeIterator begin() {
-					return PrimeIterator(container, 0);
-				}
-
-				
-				PrimeIterator end() const {
-					return PrimeIterator(container, container._elements_prime_order.size());
-				}
-		};
-
-		class SideCrossIterator
-		{
-			private:
-				MagicalContainer& container;
-				size_t index;
-
-				
-				SideCrossIterator(MagicalContainer &cont, size_t index);
-
-			public:
-				
-				SideCrossIterator(MagicalContainer &cont);
-
-				
-				~SideCrossIterator() = default;
-
-				
-				SideCrossIterator(const SideCrossIterator &other);
-
-				
-				SideCrossIterator(SideCrossIterator &&other) noexcept;
-				
-				
-				SideCrossIterator &operator=(const SideCrossIterator &other) {
-					if (this != &other)
-					{
-						container = other.container;
-						index = other.index;
-					}
-
-					return *this;
-				}
-
-				
-				SideCrossIterator &operator=(SideCrossIterator &&other) noexcept;
-			
-				
-				bool operator==(const SideCrossIterator &other) const {
-					return index == other.index;
-				}
-
-				
-				bool operator!=(const SideCrossIterator &other) const {
-					return index != other.index;
-				}
-
-				
-				bool operator<(const SideCrossIterator &other) const {
-					return index < other.index;
-				}
-
-				
-				bool operator>(const SideCrossIterator &other) const {
-					return index > other.index;
-				}
-
-				
-				int operator*() const {
-					if (index > container._elements_ascending_order.size())
-					{
-						throw out_of_range("Iterator out of range");
-					}
-					
-					return *(container._elements_sidecross_order.at(index));
-				}
-
-				
-				SideCrossIterator &operator++() {
-					if (index > container._elements_sidecross_order.size())
-					{
-						throw out_of_range("Iterator out of range");
-					}
-					
-					++index;
-					return *this;
-				}
-
-				
-				SideCrossIterator begin() {
-					return SideCrossIterator(container, 0);
-				}
-
-		
-				SideCrossIterator end() const {
-					return SideCrossIterator(container, container._elements_sidecross_order.size());
-				}
-		};
-	};
 }
